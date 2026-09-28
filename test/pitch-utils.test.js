@@ -135,3 +135,19 @@ test('describeMicError：各種錯誤類型', () => {
   assert.equal(unsupported().kind, 'unsupported');
   assert.equal(describeMicError(null).kind, 'other');
 });
+
+import { envelopePoints } from '../src/synth.js';
+
+test('envelopePoints：由 0 開始、以 0 結束，且時間遞增（不會爆音）', () => {
+  const pts = envelopePoints(2);
+  assert.equal(pts[0][1], 0);
+  assert.equal(pts.at(-1)[1], 0);
+  assert.equal(pts.at(-1)[0], 2);
+  for (let i = 1; i < pts.length; i++) assert.ok(pts[i][0] >= pts[i - 1][0]);
+  assert.ok(pts[1][0] >= 0.02, '淡入至少 20ms');
+});
+
+test('envelopePoints：很短的音也不會讓淡出超過一半', () => {
+  const pts = envelopePoints(0.2);
+  assert.ok(pts[2][0] >= 0.1 - 1e-9);
+});
