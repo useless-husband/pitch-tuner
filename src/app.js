@@ -128,7 +128,7 @@ function showPitch(freq) {
   const tname = formatNote(targetMidi, state.style, flats);
   $('target').hidden = false;
   $('target').textContent = i.strings.length
-    ? `最接近第 ${activeString + 1} 弦　目標 ${tname}　${target.toFixed(1)} Hz`
+    ? `最接近第 ${i.strings.length - activeString} 弦　目標 ${tname}　${target.toFixed(1)} Hz`
     : `最接近 ${tname}　${target.toFixed(1)} Hz`;
   markStrings();
   const inTune = status === 'in-tune';
@@ -161,7 +161,7 @@ function buildStrings() {
     b.type = 'button';
     b.className = 'string-btn';
     b.dataset.index = idx;
-    b.setAttribute('aria-label', `播放第 ${idx + 1} 弦 ${name} 的參考音`);
+    b.setAttribute('aria-label', `播放第 ${i.strings.length - idx} 弦 ${name} 的參考音`);
     b.innerHTML = `<b></b><small></small>`;
     b.querySelector('b').textContent = name;
     b.querySelector('small').textContent = `${freqFromMidi(midi, state.a4).toFixed(1)} Hz`;

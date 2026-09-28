@@ -1,4 +1,5 @@
-// 樂器與調弦：以 MIDI 音高表示每一條弦（由低音弦到高音弦，烏克麗麗依實際彈奏順序）
+// 樂器與調弦：以 MIDI 音高表示每一條弦（由低音弦到高音弦，烏克麗麗依實際彈奏順序）。
+// 顯示弦號時依慣例：最後一個（最高音）是第 1 弦，所以弦號 = strings.length - index。
 
 import { freqFromMidi, centsBetween } from './notes.js';
 
