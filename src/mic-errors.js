@@ -33,6 +33,8 @@ export function describeMicError(err, { secure = true } = {}) {
           'Safari（Mac）：Safari → 設定 → 網站 → 麥克風，把這個網站設為「允許」。',
         ],
       };
+    case 'NotSupportedError':
+      return unsupported();
     case 'NotFoundError':
     case 'DevicesNotFoundError':
     case 'OverconstrainedError':

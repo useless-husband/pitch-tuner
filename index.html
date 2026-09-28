@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="吉他、烏克麗麗、小提琴、人聲都能用的網頁調音器。音訊只在你的裝置上處理，不會上傳。">
+  <title>調音器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f4fd8'/%3E%3Cpath d='M16 6v14' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='24' r='2.5' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="src/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#tuner">跳到調音讀數</a>
+  <header class="top">
+    <h1>調音器</h1>
+    <p>吉他、烏克麗麗、小提琴、人聲都能用。</p>
+  </header>
+
+  <div class="layout">
+    <div class="col-main">
+      <section class="panel" id="mic-panel" aria-labelledby="mic-h">
+        <h2 id="mic-h" class="sr-only">麥克風</h2>
+        <p class="intro" id="mic-intro">按下「開始調音」後，瀏覽器會問你是否允許使用麥克風。聲音只在這台裝置上即時分析，不會錄音，也不會上傳到任何地方。</p>
+        <div class="row">
+          <button type="button" id="mic-toggle" class="btn primary">開始調音</button>
+          <label class="field grow" id="device-field" hidden>
+            <span>麥克風</span>
+            <select id="device"></select>
+          </label>
+        </div>
+        <div id="mic-error" class="error" role="alert" hidden>
+          <strong id="mic-error-title"></strong>
+          <ul id="mic-error-steps"></ul>
+        </div>
+      </section>
+
+      <section class="tuner" id="tuner" data-state="idle" aria-labelledby="tuner-h">
+        <h2 id="tuner-h" class="sr-only">調音讀數</h2>
+        <div class="note-row">
+          <div class="note" aria-label="偵測到的音名"><span id="note-name">–</span><span id="note-octave" class="octave"></span></div>
+          <dl class="numbers">
+            <div><dt>頻率</dt><dd><span id="freq-value">–</span> <small>Hz</small></dd></div>
+            <div><dt>音分</dt><dd><span id="cents-value">–</span></dd></div>
+          </dl>
+        </div>
+        <svg id="gauge" class="gauge" viewBox="0 0 240 84" role="img" aria-label="音分偏差指針，範圍正負 50 音分">
+          <rect id="zone" x="110" y="12" width="20" height="46" rx="3"/>
+          <g id="ticks"></g>
+          <g id="needle" class="needle"><line x1="0" y1="8" x2="0" y2="62"/><path d="M-6 4 L6 4 L0 13 Z"/></g>
+        </svg>
+        <p id="status" class="status" role="status">請對著麥克風發出聲音</p>
+        <p id="target" class="target" hidden></p>
+        <p id="announce" class="sr-only" aria-live="polite"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="trace-h">
+        <h2 id="trace-h">最近 10 秒的音高</h2>
+        <canvas id="trace" class="trace" aria-label="最近 10 秒的音高軌跡圖" role="img"></canvas>
+      </section>
+    </div>
+
+    <div class="col-side">
+      <section class="panel" aria-labelledby="set-h">
+        <h2 id="set-h">設定</h2>
+        <div class="grid2">
+          <label class="field">
+            <span>樂器／調弦</span>
+            <select id="instrument"></select>
+          </label>
+          <label class="field">
+            <span>偵測演算法</span>
+            <select id="algorithm">
+              <option value="yin">YIN</option>
+              <option value="mpm">MPM（McLeod）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>音名顯示</span>
+            <select id="style">
+              <option value="letter">C D E（字母）</option>
+              <option value="solfege">Do Re Mi（唱名）</option>
+            </select>
+          </label>
+          <div class="field">
+            <label for="a4">基準音 A4（Hz）</label>
+            <div class="stepper">
+              <button type="button" id="a4-down" class="btn" aria-label="基準音降低 1 Hz">−</button>
+              <input id="a4" type="number" inputmode="decimal" min="430" max="450" step="1" value="440">
+              <button type="button" id="a4-up" class="btn" aria-label="基準音提高 1 Hz">+</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="strings-panel" aria-labelledby="str-h" hidden>
+        <h2 id="str-h">弦（點一下聽參考音）</h2>
+        <div id="strings" class="strings" role="group" aria-label="各弦的參考音"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="met-h">
+        <h2 id="met-h">節拍器</h2>
+        <div class="bpm-row">
+          <button type="button" id="bpm-down" class="btn" aria-label="速度減 1">−</button>
+          <label class="bpm-box">
+            <span class="sr-only">速度 BPM</span>
+            <input id="bpm" type="number" min="30" max="240" step="1" value="100" inputmode="numeric">
+            <small>BPM</small>
+          </label>
+          <button type="button" id="bpm-up" class="btn" aria-label="速度加 1">+</button>
+        </div>
+        <input id="bpm-range" type="range" min="30" max="240" step="1" value="100" aria-label="速度滑桿">
+        <div class="row wrap">
+          <label class="field">
+            <span>拍號</span>
+            <select id="beats">
+              <option value="2">2 拍</option>
+              <option value="3">3 拍</option>
+              <option value="4" selected>4 拍</option>
+              <option value="5">5 拍</option>
+              <option value="6">6 拍</option>
+              <option value="7">7 拍</option>
+            </select>
+          </label>
+          <label class="check"><input id="accent" type="checkbox" checked> 第一拍加重音</label>
+        </div>
+        <div id="dots" class="dots" aria-hidden="true"></div>
+        <button type="button" id="met-toggle" class="btn primary block">開始節拍器</button>
+      </section>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <p>隱私：所有音訊都在你的瀏覽器裡即時處理，不會錄音，也不會傳到任何伺服器。</p>
+    <p>偵測方式：<span id="mode">尚未啟動</span>。原始碼與說明：<a href="https://github.com/useless-husband/pitch-tuner">GitHub</a>（MIT 授權）。</p>
+  </footer>
+</body>
+</html>

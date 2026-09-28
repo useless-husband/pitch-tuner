@@ -7,6 +7,11 @@ export const ALGORITHMS = { yin, mpm };
 export const FRAME_SIZE = 4096;
 export const HOP_SIZE = 1024;
 
+/** 取樣率很高時加大取樣框，確保仍涵蓋低音的兩個週期 */
+export function frameSizeFor(sampleRate) {
+  return sampleRate > 60000 ? FRAME_SIZE * 2 : FRAME_SIZE;
+}
+
 export function rms(buf) {
   let sum = 0;
   for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
