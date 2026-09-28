@@ -1,0 +1,14 @@
+{
+  "name": "pitch-tuner",
+  "version": "1.0.0",
+  "description": "Web-based instrument tuner (YIN / MPM pitch detection) with metronome. Zero dependencies.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "serve": "node e2e/serve.mjs",
+    "e2e": "node e2e/fake-mic.e2e.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
